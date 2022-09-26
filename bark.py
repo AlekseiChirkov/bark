@@ -1,7 +1,8 @@
 import os
+from collections import OrderedDict
 from typing import Callable, ClassVar, Union, Dict
 
-import commands
+from bark import commands
 
 
 class Option:
@@ -109,9 +110,26 @@ def get_bookmark_id_for_deletion() -> str:
     return get_user_input("Enter a bookmark ID to delete.")
 
 
+def get_bookmark_id_for_update() -> str:
+    """
+    Method returns bookmark ID to update
+    :return: str -> bookmark id
+    """
+
+    return get_user_input("Enter a bookmark ID to update.")
+
+
 def clear_screen() -> None:
     clear = 'cls' if os.name == 'nt' else 'cls'
     os.system(clear)
+
+
+def get_github_import_options():
+    return {
+        "github_username": get_user_input("User name: "),
+        "preserve_timestamps": get_user_input(
+            "Save timestamps? (y/n) ", required=False) in {'Y', 'y', None},
+    }
 
 
 def loop() -> None:
@@ -123,7 +141,7 @@ def loop() -> None:
         _ = input("Please enter the key 'Enter' to go back to menu.")
 
 
-OPTIONS = {
+OPTIONS = OrderedDict({
     "A": Option(
         "Add bookmark", commands.AddBookmarkCommand(),
         prep_call=get_new_bookmark_data
@@ -136,9 +154,20 @@ OPTIONS = {
         "Delete bookmark", commands.DeleteBookmarkCommand(),
         prep_call=get_bookmark_id_for_deletion
     ),
+    "U": Option(
+        "Update bookmark", commands.UpdateBookmarkCommand(),
+        prep_call=get_bookmark_id_for_update
+    ),
+    "G": Option(
+        "Import GitHub starts", commands.ImportGitHubStarsCommand(),
+        prep_call=get_github_import_options
+    ),
     "Q": Option("Quit", commands.QuitCommand()),
-}
+})
 
 if __name__ == '__main__':
     commands.CreateBookmarksTableCommand().execute()
-    loop()
+    try:
+        loop()
+    except KeyboardInterrupt:
+        print("\nSee you soon!")

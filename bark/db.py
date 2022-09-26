@@ -52,10 +52,25 @@ class DatabaseManager:
         placeholders = ", ".join('?' * len(columns))
         column_names = ", ".join(columns.keys())
         column_values = tuple(columns.values())
-
         self._execute(
             f"INSERT INTO {table_name} ({column_names})"
             f"VALUES ({placeholders});", column_values
+        )
+
+    def update(self, table_name: str, obj_id: int | str, columns: dict):
+        """
+        Method updates row in table
+        :param table_name: str -> table name to create row in
+        :param obj_id: str or int -> obj id to update
+        :param columns: dict -> columns to update with criteria
+        :return: None
+        """
+
+        placeholders = tuple(f'{column} = ?' for column in columns.keys())
+        update_criteria = ' AND '.join(placeholders)
+        self._execute(
+            f"UPDATE {table_name} SET {update_criteria} WHERE id={obj_id};",
+            tuple(columns.values())
         )
 
     def delete(self, table_name: str, columns: dict):
